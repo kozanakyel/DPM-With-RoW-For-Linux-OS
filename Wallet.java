@@ -14,10 +14,8 @@ public class Wallet {
     public Wallet(Peer p){
         peer = p;
         generateKeyPair();
-        UTXOs = new HashMap<String,TransactionOutput>(); // Only UTXOs owned by this wallet
-    }
-
-    
+        UTXOs = new HashMap<String, TransactionOutput>(); // Only UTXOs owned by this wallet
+    }    
 
     // This method calculates the balance of this wallet while
     // also adding incoming UTXOs of this wallet to UTXO list 
@@ -90,18 +88,29 @@ public class Wallet {
     // }
 
     // method to verify a message using the signature and the public key
-    public boolean verify(PublicKey publicKey, String data, byte[] signature) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    public boolean verify(
+        PublicKey publicKey, 
+        String data, 
+        byte[] signature
+        ) throws NoSuchAlgorithmException, 
+        InvalidKeyException, 
+        SignatureException {
+            
         Signature s = Signature.getInstance("SHA256withRSA");
         s.initVerify(publicKey);
         s.update(data.getBytes());
         return s.verify(signature);
     }
 
-
-
     // This method arranges Tx inputs and outputs in the Tx so that the amount will
     // be sent to the receiver and the change will be sent back to the sender
-    public void arrangeFunds(PublicKey recipient, int value, List<TransactionInput> inputs, List<TransactionOutput> outputs, String txid) throws NoSuchAlgorithmException {
+    public void arrangeFunds(
+        PublicKey recipient, 
+        int value, 
+        List<TransactionInput> inputs, 
+        List<TransactionOutput> outputs, 
+        String txid
+        ) throws NoSuchAlgorithmException {
 
         // First, gather UTXOs and balance and check whether we have enough funds to send
         if(getBalance() < value) { 
@@ -135,10 +144,6 @@ public class Wallet {
         outputs.add(new TransactionOutput(recipient, value, txid)); //send value to recipient
     }
 
-
-
-
-
     // Return the private key of this wallet
     public String getPrivateKeyString() {
         return Base64.getEncoder().encodeToString(this.privateKey.getEncoded());
@@ -148,9 +153,6 @@ public class Wallet {
     public String getPublicKeyString() {
         return Base64.getEncoder().encodeToString(this.publicKey.getEncoded());
     }
-
-
-
 
     // CRYPTOGRAPHIC OPERATIONS
 
@@ -162,7 +164,6 @@ public class Wallet {
         return Base64.getEncoder().encodeToString(hash);
     }
     
-
     public void generateKeyPair() {
         try {
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
@@ -174,7 +175,6 @@ public class Wallet {
             throw new RuntimeException(e);
         }
     }
-
 
     // STATIC UTILITY FUNCTIONS REGARDING KEY-STRING TRANSFORMATIONS
 

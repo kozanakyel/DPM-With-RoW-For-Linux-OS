@@ -13,6 +13,9 @@ public class Test {
         Peer.peers = new Peer[4];
         for(int i=0; i<4; i++) {
             Peer.peers[i] = new Peer();
+            // test for randaom packages
+            MetaPackage pkg = MetaPackageUtil.createRandomMetaPackage(Peer.peers[0].wallet);
+            System.out.println(pkg);
         }
 
         // One of the peers creates the genesis block

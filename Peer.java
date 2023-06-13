@@ -45,9 +45,6 @@ public class Peer {
         }
     }
 
-    
-
-
 
 /*  // Method to add a transaction to the mempool
     public void addToMempool(Transaction tx) {

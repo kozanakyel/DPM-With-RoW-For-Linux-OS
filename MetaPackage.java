@@ -17,8 +17,7 @@ public class MetaPackage {
             String name, Integer score,
             Integer version,
             String instructions,
-            String timestamp,
-            Integer ledgerId
+            String timestamp
     ) {
         this.creator = creatorWallet.publicKey;
         this.name = name;

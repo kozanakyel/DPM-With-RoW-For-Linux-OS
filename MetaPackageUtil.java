@@ -10,7 +10,8 @@ public class MetaPackageUtil {
         Integer version = new Random().nextInt(10);
         String instructions = "instructions" + new Random().nextInt(1000);
         String timestamp = Long.toString(System.currentTimeMillis());
+        Integer envStatus = new Random().nextInt(4);
 
-        return new MetaPackage(creatorWallet, name, score, version, instructions, timestamp);
+        return new MetaPackage(creatorWallet, name, score, version, instructions, timestamp, envStatus);
     }
 }

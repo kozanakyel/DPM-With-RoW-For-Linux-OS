@@ -8,8 +8,9 @@ public class MetaPackage {
     private String name;
     private Integer score;
     private Integer version;
-    private String instructions;
+    private String instructions;   // package install and setup instructions
     private String timestamp;
+    private Integer dependencyEnvStatus;   // because any peer have some different env and dependencies
     private ArrayList<String> validators;
 
     public MetaPackage(
@@ -17,7 +18,8 @@ public class MetaPackage {
             String name, Integer score,
             Integer version,
             String instructions,
-            String timestamp
+            String timestamp,
+            Integer dependencyEnvStatus
     ) {
         this.creator = creatorWallet.publicKey;
         this.name = name;
@@ -25,6 +27,7 @@ public class MetaPackage {
         this.version = version;
         this.instructions = instructions;
         this.timestamp = timestamp;
+        this.dependencyEnvStatus = dependencyEnvStatus;
         this.validators = new ArrayList<>();
     }
 
@@ -80,6 +83,14 @@ public class MetaPackage {
 
     public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public Integer getDependencyEnvStatus() {
+        return dependencyEnvStatus;
+    }
+
+    public void setDependencyEnvStatus(Integer dependencyEnvStatus) {
+        this.dependencyEnvStatus = dependencyEnvStatus;
     }
 
     public ArrayList<String> getValidators() {

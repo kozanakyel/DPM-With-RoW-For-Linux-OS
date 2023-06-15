@@ -152,6 +152,9 @@ class Transaction {
             return false;
         }
 
+        // Generate vluse score increase for transaction outputs:
+        int addOver = getInputsValue() + value; // replace leftover
+
         // Generate transaction outputs:
         int leftOver = getInputsValue() - value; //get value of inputs then the left over change:
 //        transactionId = calculateHash();

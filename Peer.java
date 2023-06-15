@@ -4,6 +4,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.SignatureException;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -34,8 +35,9 @@ public class Peer {
     
     private ServerSocket serverSocket;
     private Socket clientSocket;
-    
-    
+
+    public ArrayList<MetaPackage> createdMetaPackages;   // for keeping peers created packages
+    public ArrayList<MetaPackage> validatedMetaPackages;    // for keeping peers validated meta packages
     
     // Creates a peer, assigns the next available id, initializes random generator
     // Initializes transactions list and starts the server socket
@@ -45,7 +47,10 @@ public class Peer {
         rand = new Random(System.currentTimeMillis());
         wallet = new Wallet(this); // Normally a wallet should be anonymous, or may not be, but we add this for debugging
         blockchain = new Blockchain(this);
+
         this.envStatus = new Random().nextInt(4);   // for peers env status
+        this.createdMetaPackages = new ArrayList<MetaPackage>();
+        this.validatedMetaPackages = new ArrayList<MetaPackage>();
         try {
             serverSocket = new ServerSocket(6000 + id);
         } catch (IOException e) {
@@ -63,6 +68,22 @@ public class Peer {
 
     public Integer getEnvStatus() {
         return envStatus;
+    }
+
+    public ArrayList<MetaPackage> getCreatedMetaPackages() {
+        return createdMetaPackages;
+    }
+
+    public void setCreatedMetaPackages(ArrayList<MetaPackage> createdMetaPackages) {
+        this.createdMetaPackages = createdMetaPackages;
+    }
+
+    public ArrayList<MetaPackage> getValidatedMetaPackages() {
+        return validatedMetaPackages;
+    }
+
+    public void setValidatedMetaPackages(ArrayList<MetaPackage> validatedMetaPackages) {
+        this.validatedMetaPackages = validatedMetaPackages;
     }
 
     /*  // Method to add a transaction to the mempool

@@ -13,6 +13,8 @@ public class Peer {
 
     public static Peer[] peers; // In a real system, there must be a listing of peer ids to broadcast, here we keep all peers in this array
     public static Random rand;
+
+    private final Integer envStatus;  // for peers linux env type
     
     public int id;
     private static int countPeers = 0; //to assign an automatic id
@@ -27,7 +29,6 @@ public class Peer {
     //In fact, a peer can have multiple wallets
     //But for this application, to keep it simple, we implement only one
     protected Wallet wallet;      // This is the wallet of this peer that holds the keys and UTXOs to be used later
-    
 
     private BlockingQueue<String> queue;    //To keep incoming messages
     
@@ -44,6 +45,7 @@ public class Peer {
         rand = new Random(System.currentTimeMillis());
         wallet = new Wallet(this); // Normally a wallet should be anonymous, or may not be, but we add this for debugging
         blockchain = new Blockchain(this);
+        this.envStatus = new Random().nextInt(4);   // for peers env status
         try {
             serverSocket = new ServerSocket(6000 + id);
         } catch (IOException e) {
@@ -59,11 +61,11 @@ public class Peer {
         System.out.println(s);
     }
 
-    
+    public Integer getEnvStatus() {
+        return envStatus;
+    }
 
-
-
-/*  // Method to add a transaction to the mempool
+    /*  // Method to add a transaction to the mempool
     public void addToMempool(Transaction tx) {
         this.blockchain.mempool.add(tx);
     }

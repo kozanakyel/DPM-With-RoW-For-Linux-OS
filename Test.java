@@ -13,6 +13,7 @@ public class Test {
         Peer.peers = new Peer[4];
         for(int i=0; i<4; i++) {
             Peer.peers[i] = new Peer();
+            System.out.println("Get peer envirmont depenceny status: " + Peer.peers[i].getEnvStatus());
         }
 
         // One of the peers creates the genesis block

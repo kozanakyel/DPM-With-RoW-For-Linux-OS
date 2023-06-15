@@ -26,4 +26,10 @@ public class IPFSPackageCenter {
             return null;
         }
     }
+
+    public Integer getSize(){
+        return allPackages.size();
+    }
+
+
 }

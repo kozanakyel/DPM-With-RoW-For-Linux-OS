@@ -74,16 +74,16 @@ public class Peer {
         return createdMetaPackages;
     }
 
-    public void setCreatedMetaPackages(ArrayList<MetaPackage> createdMetaPackages) {
-        this.createdMetaPackages = createdMetaPackages;
+    public void addPackageCreated(MetaPackage metaPackage) {
+        createdMetaPackages.add(metaPackage);
     }
 
     public ArrayList<MetaPackage> getValidatedMetaPackages() {
         return validatedMetaPackages;
     }
 
-    public void setValidatedMetaPackages(ArrayList<MetaPackage> validatedMetaPackages) {
-        this.validatedMetaPackages = validatedMetaPackages;
+    public void addPackageValidated(MetaPackage metaPackage) {
+        validatedMetaPackages.add(metaPackage);
     }
 
     /*  // Method to add a transaction to the mempool

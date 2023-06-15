@@ -248,6 +248,25 @@ public class Peer {
         }
     }
 
+    public void gossipPackageProtocolToAllPeers(String message, MetaPackage metaPackage) {
+        // Gossip protocol for if creating a new packages, reached to all their peers
+        // or if validating a new packages from any peer, we can broadcast to others
+        for(int peerid=0; peerid<peers.length; peerid++){
+            //if(peerid!=this.id) { // LET IT ALSO SEND TO ITSELF
+            this.connectToPeer(Peer.peers[peerid]);
+            new Thread(() -> {
+                try {
+                    PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+                    out.println(message + " : "+ metaPackage.getName());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+            //}
+        }
+    }
+
+
 
 
 

@@ -18,8 +18,9 @@ class TransactionOutput {
     
     //Calculates the hash by using recipient + value + parentTransactionId
     public String calculateHash() throws NoSuchAlgorithmException {
+        // In fact, these three may not be unique!!! <- Problem to be solved...
         String dataToHash = "" + this.recipient + this.value + this.parentTransactionId;
-        return Wallet.generateHash(dataToHash);
+        return StringUtil.hash(dataToHash);
     }
 
     // Finds out whether a TXO belongs to a particular public key

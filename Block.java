@@ -20,7 +20,10 @@ public class Block {
         Transaction coinbase = new Transaction(recipient, blockchain.MININGREWARD, blockchain.peer);
         coinbase.transactionId = "coinbase";
         this.transactions.add(coinbase);
-        this.timeStamp = System.currentTimeMillis();
+        this.merkleRoot="0";
+        this.timeStamp = 0;
+        this.index=0;
+        this.nonce=0;
         this.hash = calculateHash(); // Calculate the hash of the genesis block.
     }
 
@@ -33,8 +36,7 @@ public class Block {
         this.blockchain = blockchain;
 
         // Create mining reward transaction
-        Transaction miningReward = new Transaction( null,
-                                                    this.blockchain.peer.getPublicKey(),
+        Transaction miningReward = new Transaction( this.blockchain.peer.getPublicKey(),
                                                     this.blockchain.MININGREWARD/(2^(index/this.blockchain.HALVINGPERIOD)),
                                                     this.blockchain.peer);
 
@@ -42,20 +44,18 @@ public class Block {
         this.transactions.add(0, miningReward);
 
         // compute merkle root
-        this.merkleRoot = StringUtil.getMerkleRoot(transactions);
+        this.merkleRoot = getMerkleRoot();
 
         // Take the timestamp just before taking the hash
         this.timeStamp = new Date().getTime();
     }
     
     public String calculateHash() {
-        String calculatedhash = StringUtil.applySha256(
-                previousHash +
-                Long.toString(timeStamp) +
-                Integer.toString(nonce) +
-                merkleRoot
-        );
-        return calculatedhash;
+        String dataToHash = previousHash +
+                            Long.toString(timeStamp) +
+                            Integer.toString(nonce) +
+                            merkleRoot;
+        return StringUtil.hash(dataToHash);
     }
 
     //Increases nonce value until hash target is reached.
@@ -70,7 +70,30 @@ public class Block {
             this.nonce ++;
             this.hash = calculateHash();
         }
-        System.out.println("Block Mined!!! : " + this.hash);
+        this.blockchain.peer.write(" => Block Mined!!! : " + this.hash);
+    }
+
+
+    // Calculates the Merkle root of all given transactions
+    // Normally, the length of transactions must be a power of 2 for this to work properly
+    // Otherwise the last element and possibly some other elements may not affect the root
+    public String getMerkleRoot() {
+        int count = transactions.size();
+        ArrayList<String> previousTreeLayer = new ArrayList<String>();
+        for(Transaction transaction : transactions) {
+            previousTreeLayer.add(transaction.transactionId);
+        }
+        ArrayList<String> treeLayer = previousTreeLayer;
+        while(count > 1) {
+            treeLayer = new ArrayList<String>();
+            for(int i=1; i < previousTreeLayer.size(); i+=2) {
+                treeLayer.add(StringUtil.applySha256(previousTreeLayer.get(i-1) + previousTreeLayer.get(i)));
+            }
+            count = treeLayer.size();
+            previousTreeLayer = treeLayer;
+        }
+        String merkleRoot = (treeLayer.size() == 1) ? treeLayer.get(0) : "";
+        return merkleRoot;
     }
 
     //Add transactions to this block

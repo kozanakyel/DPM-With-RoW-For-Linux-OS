@@ -4,8 +4,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.SignatureException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -16,14 +14,23 @@ public class Peer {
     public static Peer[] peers; // In a real system, there must be a listing of peer ids to broadcast, here we keep all peers in this array
     public static Random rand;
     
-    private int id;
-    private static int countPeers = 0;
+    public int id;
+    private static int countPeers = 0; //to assign an automatic id
 
-    public Blockchain blockchain;  // This is this particular peer's copy of the blockchain
+    //Every peer has its own copy of the blockchain
+    //Possibly can occasionally become a little different from others
+    //but must eventually become the same as all others
+    //which is the whole idea of the blockchain
+    public Blockchain blockchain;
+
+    //Every peer has a wallet.
+    //In fact, a peer can have multiple wallets
+    //But for this application, to keep it simple, we implement only one
     protected Wallet wallet;      // This is the wallet of this peer that holds the keys and UTXOs to be used later
     
 
-    private BlockingQueue<String> queue;
+    private BlockingQueue<String> queue;    //To keep incoming messages
+    
     private ServerSocket serverSocket;
     private Socket clientSocket;
     
@@ -31,19 +38,29 @@ public class Peer {
     
     // Creates a peer, assigns the next available id, initializes random generator
     // Initializes transactions list and starts the server socket
-    public Peer() {
+    public Peer() throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
         id = countPeers++;
         queue = new LinkedBlockingQueue<>();
         rand = new Random(System.currentTimeMillis());
-        
-        blockchain = new Blockchain(this);
         wallet = new Wallet(this); // Normally a wallet should be anonymous, or may not be, but we add this for debugging
+        blockchain = new Blockchain(this);
         try {
             serverSocket = new ServerSocket(6000 + id);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    public void write(String s) {
+        for(int i=0; i<id; i++) {
+            System.out.print(" ");
+        }
+        System.out.println("PEER "+id+": ");
+        System.out.println(s);
+    }
+
+    
+
 
 
 /*  // Method to add a transaction to the mempool
@@ -78,17 +95,21 @@ public class Peer {
 
                     // Randomly choose an amount. Slightly more than balance is possible
                     // so that we can check whether frauds are caught or not.
-                    int amount = rand.nextInt((int)(this.wallet.getBalance()*1.2+10));
+                    int bal = this.wallet.getBalance();
+                    if(bal>0) {
+                        int amount = rand.nextInt((int)(bal*1.2));
 
-                    Transaction newTx = new Transaction(this.wallet.publicKey, 
-                                                        Peer.peers[receiver].wallet.publicKey,
-                                                        amount,
-                                                        this); // If we send this, why also send pubkey?
-                    
+                        Transaction newTx = new Transaction(this.wallet.publicKey, 
+                                                            Peer.peers[receiver].wallet.publicKey,
+                                                            amount,
+                                                            this); // If we send this, why also send pubkey?
+                        
 
-                    System.out.println("Peer " + this.id +" t:"+ newTx.timeStamp+ ": Transaction broadcasted -> ID:"+newTx.transactionId+" val:"+newTx.value);
+                        System.out.println("Peer " + this.id +" t:"+ newTx.timeStamp+ ": Transaction broadcasted -> ID:"+newTx.transactionId+" val:"+newTx.value);
+                        
+                        this.broadcastToAllPeers(newTx.toString());
+                    }
                     
-                    this.broadcastToAllPeers(newTx.toString());
                 } catch (InterruptedException | NoSuchAlgorithmException e) {
                     e.printStackTrace();
                 }                
@@ -97,36 +118,7 @@ public class Peer {
     }
 
 
-    public void createGenesisBlock() throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        // Create a coinbase transaction for the block reward. For simplicity, we'll
-        // pretend this peer's wallet address is the recipient.
-        // Since this is a simulation, we can use this peer's public key.
-        // In reality, this would be a more complex transaction.
-        Transaction coinbase = new Transaction(this.wallet.publicKey, blockchain.MININGREWARD, this);
-
-        // Manually set a transaction ID
-        coinbase.transactionId = "coinbase";
-        
-        // Manually sign the coinbase transaction
-        String dataToSign = Wallet.getStringFromPublicKey(coinbase.recipient) + Integer.toString(coinbase.value);
-        coinbase.signature = this.wallet.sign(dataToSign);
-
-        // Create a list of transactions and add the coinbase transaction
-        List<Transaction> transactions = new ArrayList<>();
-        transactions.add(coinbase);
-
-        this.blockchain = new Blockchain(this);
-        // Create the genesis block. We'll set previousHash as "0" because there's no previous block.
-        Block genesisBlock = new Block(wallet.publicKey, this.blockchain);
-
-        // Add it to the blockchain
-        this.blockchain.addBlock(genesisBlock);
-        
-        // Add the output transaction to UTXOs
-        TransactionOutput output = new TransactionOutput(coinbase.recipient, coinbase.value, coinbase.transactionId);
-        this.blockchain.UTXOs.put(output.id, output);
-        System.out.println("Genesis block created.");
-    }
+    
 
     /////////////////////////////////////////////////////////////////////////////////
     ///////////////////////// BLOCKCHAIN INTERACTION METHODS ////////////////////////

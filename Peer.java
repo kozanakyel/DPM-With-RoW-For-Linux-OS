@@ -96,7 +96,10 @@ public class Peer {
         return this.blockchain.mempool;
     }
 */
-
+    public String flipRandomValidatorCreator(){
+        Integer rand = new Random().nextInt(1);
+        return "validator";
+    }
 
     /////////////////////////////////////////////////////////////////////////////////
     ///////////////////////// THE LIVING SIMULATION OF PEER /////////////////////////
@@ -115,6 +118,7 @@ public class Peer {
                     // Randomly choose "someone else" to send some money.
                     int receiver = rand.nextInt(peers.length);
                     while(receiver==this.id) receiver = rand.nextInt(peers.length); // I said "someone else", not myself
+
 
                     // Randomly choose an amount. Slightly more than balance is possible
                     // so that we can check whether frauds are caught or not.

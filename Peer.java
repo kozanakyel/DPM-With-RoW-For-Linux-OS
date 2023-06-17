@@ -96,9 +96,13 @@ public class Peer {
         return this.blockchain.mempool;
     }
 */
-    public String flipRandomValidatorCreator(){
-        Integer rand = new Random().nextInt(1);
-        return "validator";
+    public String flipRandomValidatorCreator() {
+        Integer rand = new Random().nextInt(3); // Generate 0, 1, or 2
+        switch(rand) {
+            case 0: return "creator";
+            case 1: return "validator";
+            default: return "waiting"; // Case 2 will return "waiting"
+        }
     }
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -119,6 +123,32 @@ public class Peer {
                     int receiver = rand.nextInt(peers.length);
                     while(receiver==this.id) receiver = rand.nextInt(peers.length); // I said "someone else", not myself
 
+                    int thisPeer = this.id;    // becuase each peer role decided this way.
+                                                // actually we should choose package from repo or from broadcast
+                    String selectedRole = flipRandomValidatorCreator();
+//                    selectedRole = "creator";
+                    if(selectedRole.equals("creator")){
+                        // 1-create package
+                        // 2-send package to repo
+                        // 3-gossip protocol broadcast package creating
+                        System.out.println("Starting Creating Package Process!");
+                        MetaPackage newPackage = MetaPackageUtil.createRandomMetaPackage(this.wallet);
+                        IPFSPackageCenter.addPackage(newPackage);
+                        System.out.println(newPackage);
+                        this.gossipPackageProtocolToAllPeers("Created Package ", newPackage);
+
+                    }else if(selectedRole.equals("validator")){
+                        // 1-get packages from IPS repo or gossip protocol broadcast
+                        // 2-validate packages llok env status code
+                        // 3-yeah i validate or not
+                        // 4-guve score write transactions
+                        System.out.println("Starting Validating Package Process!");
+                        MetaPackage gotPackage = IPFSPackageCenter.sendRandomPackage();
+                        this.gossipPackageProtocolToAllPeers("Validated Package ", gotPackage);
+                        System.out.println("Validator process!!!");
+                    }else{
+                        System.out.println("Peer" + thisPeer + " waiting for next timestep!!");
+                    }
 
                     // Randomly choose an amount. Slightly more than balance is possible
                     // so that we can check whether frauds are caught or not.

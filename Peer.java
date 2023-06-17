@@ -135,7 +135,6 @@ public class Peer {
                         System.out.println("Starting Creating Package Process!");
                         MetaPackage newPackage = MetaPackageUtil.createRandomMetaPackage(this.wallet);
                         IPFSPackageCenter.addPackage(newPackage);
-                        System.out.println(newPackage);
                         this.gossipPackageProtocolToAllPeers("Created Package ", newPackage);
 
                     }else if(selectedRole.equals("validator")){
@@ -150,18 +149,29 @@ public class Peer {
                             // if the environment status is equals the we can validate package
                             if(Objects.equals(gotPackage.getDependencyEnvStatus(), this.getEnvStatus())) {
                                 System.out.println("Validate process with env assign!!");
+                                Integer reward = gotPackage.getScore();
+                                System.out.println("rward is : " + reward);
                                 Transaction validatorTx = new Transaction(this.wallet.publicKey,
                                         Peer.peers[thisPeer].wallet.publicKey,
-                                        gotPackage.getScore(),
+                                        reward,
                                         this);
 
-                                Integer creatorId = gotPackage.getCreatorId();
-                                Transaction creatorTx = new Transaction(this.wallet.publicKey,
-                                        Peer.peers[creatorId].wallet.publicKey,
-                                        gotPackage.getScore(),
-                                        this);
+//                                Integer creatorId = gotPackage.getCreatorId();
+//                                Transaction creatorTx = new Transaction(this.wallet.publicKey,
+//                                        Peer.peers[creatorId].wallet.publicKey,
+//                                        gotPackage.getScore(),
+//                                        this);
 
                                 this.gossipPackageProtocolToAllPeers(validatorTx.toString(), gotPackage);
+                            }else{
+                                int penalty = Integer.parseInt(String.valueOf(-gotPackage.getScore()/2));
+                                System.out.println("no validate penalty is : " + penalty);
+                                Transaction validatorTx = new Transaction(this.wallet.publicKey,
+                                        Peer.peers[thisPeer].wallet.publicKey,
+                                        penalty,
+                                        this);
+                                this.gossipPackageProtocolToAllPeers(validatorTx.toString(), gotPackage);
+                                System.out.println("Fail validate process!");
                             }
                             System.out.println("Validator process finish!!!");
                         }else {
@@ -217,12 +227,14 @@ public class Peer {
                 try {
                     String message = queue.take(); // blocks if queue is empty
                     // Turn the string message back into a transaction
+                    System.out.println("consumer service messages: " + message);
+                    String[] parts = message.split(":");
 
 
-                    Transaction receivedTx = Transaction.fromString(message, this);
+                    Transaction receivedTx = Transaction.fromString(parts[0], this);
 
                     // Process the message
-                    System.out.println("Peer " + this.id + ": Transaction received -> " + Wallet.getStringFromPublicKey(receivedTx.sender).substring(0,5)+" ==> Number of txs in my mempool: "+blockchain.mempool.size());
+                    System.out.println("For package "+ parts[1] + " Peer " + this.id + ": Transaction received -> " + Wallet.getStringFromPublicKey(receivedTx.sender).substring(0,5)+" ==> Number of txs in my mempool: "+blockchain.mempool.size());
                     if(receivedTx.processTransaction())
                         blockchain.mempool.add(receivedTx); // For now, just add it to the end of transactions
                     
@@ -313,7 +325,7 @@ public class Peer {
             new Thread(() -> {
                 try {
                     PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                    out.println(message + " : "+ metaPackage.getName());
+                    out.println(message + ":"+ metaPackage.getName());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

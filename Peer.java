@@ -5,6 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -140,12 +141,32 @@ public class Peer {
                     }else if(selectedRole.equals("validator")){
                         // 1-get packages from IPS repo or gossip protocol broadcast
                         // 2-validate packages llok env status code
-                        // 3-yeah i validate or not
+                        // 3-yeah i validate or not  look env dependecy
                         // 4-guve score write transactions
                         System.out.println("Starting Validating Package Process!");
-                        MetaPackage gotPackage = IPFSPackageCenter.sendRandomPackage();
-                        this.gossipPackageProtocolToAllPeers("Validated Package ", gotPackage);
-                        System.out.println("Validator process!!!");
+                        if(IPFSPackageCenter.getSize() > 0){
+                            MetaPackage gotPackage = IPFSPackageCenter.sendRandomPackage();
+                            assert gotPackage != null;
+                            // if the environment status is equals the we can validate package
+                            if(Objects.equals(gotPackage.getDependencyEnvStatus(), this.getEnvStatus())) {
+                                Transaction validatorTx = new Transaction(this.wallet.publicKey,
+                                        Peer.peers[thisPeer].wallet.publicKey,
+                                        gotPackage.getScore(),
+                                        this);
+
+                                Integer creatorId = gotPackage.getCreatorId();
+                                Transaction creatorTx = new Transaction(this.wallet.publicKey,
+                                        Peer.peers[creatorId].wallet.publicKey,
+                                        gotPackage.getScore(),
+                                        this);
+
+                                this.broadcastToAllPeers(validatorTx.toString());
+                            }
+                            System.out.println("Validator process!!!");
+                        }else {
+                            System.out.println("IPFS Package Center has no Package yet!!");
+                        }
+
                     }else{
                         System.out.println("Peer" + thisPeer + " waiting for next timestep!!");
                     }
@@ -153,19 +174,19 @@ public class Peer {
                     // Randomly choose an amount. Slightly more than balance is possible
                     // so that we can check whether frauds are caught or not.
                     int bal = this.wallet.getBalance();
-                    if(bal>0) {
-                        int amount = rand.nextInt((int)(bal*1.2));
-
-                        Transaction newTx = new Transaction(this.wallet.publicKey, 
-                                                            Peer.peers[receiver].wallet.publicKey,
-                                                            amount,
-                                                            this); // If we send this, why also send pubkey?
-                        
-
-                        System.out.println("Peer " + this.id +" t:"+ newTx.timeStamp+ ": Transaction broadcasted -> ID:"+newTx.transactionId+" val:"+newTx.value);
-                        
-                        this.broadcastToAllPeers(newTx.toString());
-                    }
+//                    if(bal>0) {
+//                        int amount = rand.nextInt((int)(bal*1.2));
+//
+//                        Transaction newTx = new Transaction(this.wallet.publicKey,
+//                                                            Peer.peers[receiver].wallet.publicKey,
+//                                                            amount,
+//                                                            this); // If we send this, why also send pubkey?
+//
+//
+//                        System.out.println("Peer " + this.id +" t:"+ newTx.timeStamp+ ": Transaction broadcasted -> ID:"+newTx.transactionId+" val:"+newTx.value);
+//
+//                        this.broadcastToAllPeers(newTx.toString());
+//                    }
                     
                 } catch (InterruptedException | NoSuchAlgorithmException e) {
                     e.printStackTrace();

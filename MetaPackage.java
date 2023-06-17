@@ -5,6 +5,7 @@ import java.util.Objects;
 public class MetaPackage {
 
     private final PublicKey creator;
+    private Integer creatorId;
     private String name;
     private Integer score;
     private Integer version;
@@ -29,6 +30,7 @@ public class MetaPackage {
         this.timestamp = timestamp;
         this.dependencyEnvStatus = dependencyEnvStatus;
         this.validators = new ArrayList<>();
+        this.creatorId = creatorWallet.peer.id;
     }
 
     @Override
@@ -43,6 +45,10 @@ public class MetaPackage {
     @Override
     public int hashCode() {
         return Objects.hash(creator, name, timestamp);
+    }
+
+    public Integer getCreatorId() {
+        return creatorId;
     }
 
     public String getName() {

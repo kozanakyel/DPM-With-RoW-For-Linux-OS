@@ -5,6 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
@@ -97,13 +98,23 @@ public class Peer {
         return this.blockchain.mempool;
     }
 */
+    // randomly choosing role for each peer any timestep...
     public String flipRandomValidatorCreator() {
-        Integer rand = new Random().nextInt(3); // Generate 0, 1, or 2
-        switch(rand) {
-            case 0: return "creator";
-            case 1: return "validator";
-            default: return "waiting"; // Case 2 will return "waiting"
-        }
+
+        int rand = new Random().nextInt(3); // Generate 0, 1, or 2
+        return switch (rand) {
+            case 0 -> "creator";
+            case 1 -> "validator";
+            default -> "waiting"; // Case 2 will return "waiting"
+        };
+    }
+
+    public Integer calculateReward(MetaPackage metaPackage){
+        Integer validatorSize = metaPackage.getValidators().size();
+        if(validatorSize > 0)
+            return metaPackage.getScore()/validatorSize;
+        else
+            return metaPackage.getScore();
     }
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -127,16 +138,16 @@ public class Peer {
                     int thisPeer = this.id;    // becuase each peer role decided this way.
                                                 // actually we should choose package from repo or from broadcast
                     String selectedRole = flipRandomValidatorCreator();
-//                    selectedRole = "creator";
+                    System.out.println("Peer " + thisPeer + " role is: " + selectedRole);
                     if(selectedRole.equals("creator")){
                         // 1-create package
                         // 2-send package to repo
                         // 3-gossip protocol broadcast package creating
                         System.out.println("Starting Creating Package Process!");
                         MetaPackage newPackage = MetaPackageUtil.createRandomMetaPackage(this.wallet);
-                        this.addPackageCreated(newPackage);
-                        IPFSPackageCenter.addPackage(newPackage);
-                        this.gossipPackageProtocolToAllPeers("Created Package ", newPackage);
+                        this.addPackageCreated(newPackage);        // peers created package list
+                        IPFSPackageCenter.addPackage(newPackage);   // IPFS central package repo add
+                        System.out.println("Peer " + thisPeer + " create " + newPackage.getName() + " and send IPFS repo.");
 
                     }else if(selectedRole.equals("validator")){
                         // 1-get packages from IPS repo or gossip protocol broadcast
@@ -150,23 +161,35 @@ public class Peer {
                             // if the environment status is equals the we can validate package
                             if(Objects.equals(gotPackage.getDependencyEnvStatus(), this.getEnvStatus())) {
                                 System.out.println("Validate process with env assign!!");
-                                Integer reward = gotPackage.getScore();
-                                System.out.println("rward is : " + reward);
-                                Transaction validatorTx = new Transaction(this.wallet.publicKey,
-                                        Peer.peers[thisPeer].wallet.publicKey,
-                                        reward,
-                                        this);
+                                Integer reward = calculateReward(gotPackage);
+                                System.out.println("Reward is : " + reward);
+                                if(reward > 0){
+                                    Transaction validatorTx = new Transaction(this.wallet.publicKey,
+                                            Peer.peers[thisPeer].wallet.publicKey,
+                                            reward,
+                                            this);
+                                    gotPackage.addValidator(this);
+                                    this.addPackageValidated(gotPackage);
+                                    Integer creatorPeer = gotPackage.getCreatorId();
+                                    Transaction creatorTx = new Transaction(this.wallet.publicKey,
+                                            Peer.peers[creatorPeer].wallet.publicKey,
+                                            gotPackage.getScore(),
+                                            this);
+                                    //this.gossipPackageProtocolToAllPeers(creatorTx.toString(), gotPackage);
+                                    this.gossipPackageProtocolToAllPeers(validatorTx.toString(), gotPackage);
+                                }else{
+                                    System.out.println("Reward is not enough for validating!");
+                                }
 
-//                                Integer creatorId = gotPackage.getCreatorId();
+//                                Integer creatorPeer = gotPackage.getCreatorId();
 //                                Transaction creatorTx = new Transaction(this.wallet.publicKey,
-//                                        Peer.peers[creatorId].wallet.publicKey,
+//                                        Peer.peers[creatorPeer].wallet.publicKey,
 //                                        gotPackage.getScore(),
 //                                        this);
-                                gotPackage.addValidator(this);
-                                this.gossipPackageProtocolToAllPeers(validatorTx.toString(), gotPackage);
+
                             }else{
                                 int penalty = Integer.parseInt(String.valueOf(-gotPackage.getScore()/2));
-                                System.out.println("no validate penalty is : " + penalty);
+                                System.out.println("No validate penalty is : " + penalty);
                                 Transaction validatorTx = new Transaction(this.wallet.publicKey,
                                         Peer.peers[thisPeer].wallet.publicKey,
                                         penalty,
@@ -183,9 +206,9 @@ public class Peer {
                         System.out.println("Peer" + thisPeer + " waiting for next timestep!!");
                     }
 
-                    // Randomly choose an amount. Slightly more than balance is possible
-                    // so that we can check whether frauds are caught or not.
-                    int bal = this.wallet.getBalance();
+//                     Randomly choose an amount. Slightly more than balance is possible
+//                     so that we can check whether frauds are caught or not.
+//                     int bal = this.wallet.getBalance();
 //                    if(bal>0) {
 //                        int amount = rand.nextInt((int)(bal*1.2));
 //
@@ -228,14 +251,14 @@ public class Peer {
                 try {
                     String message = queue.take(); // blocks if queue is empty
                     // Turn the string message back into a transaction
-                    System.out.println("consumer service messages: " + message);
-                    String[] parts = message.split(":");
-
+//                    System.out.println("consumer service messages: " + message);
+                    String[] parts = message.split("#");
 
                     Transaction receivedTx = Transaction.fromString(parts[0], this);
-
                     // Process the message
-                    System.out.println("For package "+ parts[1] + " Peer " + this.id + ": Transaction received -> " + Wallet.getStringFromPublicKey(receivedTx.sender).substring(0,5)+" ==> Number of txs in my mempool: "+blockchain.mempool.size());
+                    System.out.println("For package "+ parts[1] + " Peer " + this.id + ": Transaction received -> "
+                            + Wallet.getStringFromPublicKey(receivedTx.sender).substring(0,5)
+                            + " ==> Number of txs in my mempool: "+blockchain.mempool.size());
                     if(receivedTx.processTransaction())
                         blockchain.mempool.add(receivedTx); // For now, just add it to the end of transactions
                     
@@ -326,7 +349,7 @@ public class Peer {
             new Thread(() -> {
                 try {
                     PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                    out.println(message + ":"+ metaPackage.getName());
+                    out.println(message + "#"+ metaPackage.getName());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

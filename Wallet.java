@@ -103,10 +103,11 @@ public class Wallet {
     public void arrangeFunds(PublicKey recipient, int value, List<TransactionInput> inputs, List<TransactionOutput> outputs, String txid) throws NoSuchAlgorithmException {
 
         // First, gather UTXOs and balance and check whether we have enough funds to send
-        if(getBalance() < value) { 
-            System.out.println("!!! Not Enough funds to send transaction. Transaction Discarded.");
-            //return null;
-        }
+        //it is not necessary for dpm use case because reputation score can be negative
+//        if(getBalance() < value) {
+//            System.out.println("!!! Not Enough funds to send transaction. Transaction Discarded.");
+//            //return null;
+//        }
 
         // Then, find enough transaction inputs to afford the value
         int total = 0;

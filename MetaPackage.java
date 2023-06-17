@@ -12,7 +12,7 @@ public class MetaPackage {
     private String instructions;   // package install and setup instructions
     private String timestamp;
     private Integer dependencyEnvStatus;   // because any peer have some different env and dependencies
-    private ArrayList<String> validators;
+    private ArrayList<Peer> validators;
 
     public MetaPackage(
             Wallet creatorWallet,
@@ -99,12 +99,12 @@ public class MetaPackage {
         this.dependencyEnvStatus = dependencyEnvStatus;
     }
 
-    public ArrayList<String> getValidators() {
+    public ArrayList<Peer> getValidators() {
         return validators;
     }
 
-    public void setValidators(ArrayList<String> validators) {
-        this.validators = validators;
+    public void addValidator(Peer peer) {
+        getValidators().add(peer);
     }
 
     @Override

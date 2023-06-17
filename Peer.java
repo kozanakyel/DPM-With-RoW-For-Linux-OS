@@ -134,6 +134,7 @@ public class Peer {
                         // 3-gossip protocol broadcast package creating
                         System.out.println("Starting Creating Package Process!");
                         MetaPackage newPackage = MetaPackageUtil.createRandomMetaPackage(this.wallet);
+                        this.addPackageCreated(newPackage);
                         IPFSPackageCenter.addPackage(newPackage);
                         this.gossipPackageProtocolToAllPeers("Created Package ", newPackage);
 
@@ -161,7 +162,7 @@ public class Peer {
 //                                        Peer.peers[creatorId].wallet.publicKey,
 //                                        gotPackage.getScore(),
 //                                        this);
-
+                                gotPackage.addValidator(this);
                                 this.gossipPackageProtocolToAllPeers(validatorTx.toString(), gotPackage);
                             }else{
                                 int penalty = Integer.parseInt(String.valueOf(-gotPackage.getScore()/2));

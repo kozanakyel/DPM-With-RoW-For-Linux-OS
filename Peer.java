@@ -149,6 +149,7 @@ public class Peer {
                             assert gotPackage != null;
                             // if the environment status is equals the we can validate package
                             if(Objects.equals(gotPackage.getDependencyEnvStatus(), this.getEnvStatus())) {
+                                System.out.println("Validate process with env assign!!");
                                 Transaction validatorTx = new Transaction(this.wallet.publicKey,
                                         Peer.peers[thisPeer].wallet.publicKey,
                                         gotPackage.getScore(),
@@ -160,9 +161,9 @@ public class Peer {
                                         gotPackage.getScore(),
                                         this);
 
-                                this.broadcastToAllPeers(validatorTx.toString());
+                                this.gossipPackageProtocolToAllPeers(validatorTx.toString(), gotPackage);
                             }
-                            System.out.println("Validator process!!!");
+                            System.out.println("Validator process finish!!!");
                         }else {
                             System.out.println("IPFS Package Center has no Package yet!!");
                         }

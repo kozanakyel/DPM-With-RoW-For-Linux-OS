@@ -5,7 +5,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
@@ -17,7 +16,8 @@ public class Peer {
                                 // keep all peers in this array
     public static Random rand;
 
-    private final Integer envStatus; // for peers linux env type
+    private final Integer envStatus; // for peers linux env type because we can check if env and package env is
+                                     // adaptive or not
 
     public int id;
     private static int countPeers = 0; // to assign an automatic id
@@ -39,8 +39,8 @@ public class Peer {
     private ServerSocket serverSocket;
     private Socket clientSocket;
 
-    public ArrayList<MetaPackage> createdMetaPackages; // for keeping peers created packages
-    public ArrayList<MetaPackage> validatedMetaPackages; // for keeping peers validated meta packages
+    public ArrayList<MetaPackage> createdMetaPackages; // for keeping peer's created packages
+    public ArrayList<MetaPackage> validatedMetaPackages; // for keeping peer's validated meta packages
 
     // Creates a peer, assigns the next available id, initializes random generator
     // Initializes transactions list and starts the server socket
@@ -101,6 +101,7 @@ public class Peer {
      * return this.blockchain.mempool;
      * }
      */
+
     // randomly choosing role for each peer any timestep...
     public String flipRandomValidatorCreator() {
 
@@ -108,10 +109,16 @@ public class Peer {
         return switch (rand) {
             case 0 -> "creator";
             case 1 -> "validator";
-            default -> "waiting"; // Case 2 will return "waiting"
+            default -> "waiting";
         };
     }
 
+    // from fetch package score and difficulties then
+    // calculate score, reward or penalty
+    // with respect to packages validator size
+    // we should keep package validator size so
+    // if validator is more get more reward or penalty
+    // at the end peer should think about is it worth the validate or not
     public Integer calculateScore(MetaPackage metaPackage) {
         Integer validatorSize = metaPackage.getValidators().size();
         if (validatorSize > 0)
@@ -120,10 +127,11 @@ public class Peer {
             return metaPackage.getScore();
     }
 
+    // if the peer creator
+    // 1-create package
+    // 2-send package to repo
+    // 3-add package to users created package list
     public void createdPackageProcess(Peer peer) {
-        // 1-create package
-        // 2-send package to repo
-        // 3-add package to users created package list
         System.out.println("Starting Creating Package Process!");
         MetaPackage newPackage = MetaPackageUtil.createRandomMetaPackage(peer.wallet);
         this.addPackageCreated(newPackage); // peers created package list
@@ -131,6 +139,8 @@ public class Peer {
         System.out.println("Peer " + peer.id + " create " + newPackage.getName() + " and send IPFS repo.");
     }
 
+    // we need new transaction constructor for got 2 role because each of them got
+    // reputation score
     public void validateSuccessProcess(MetaPackage metaPackage, Peer peer, int reward) throws NoSuchAlgorithmException {
         Transaction validatorTx = new Transaction(this.wallet.publicKey,
                 Peer.peers[peer.id].wallet.publicKey,
@@ -179,10 +189,9 @@ public class Peer {
                     // while (receiver == this.id)
                     // receiver = rand.nextInt(peers.length); // I said "someone else", not myself
 
-                    int thisPeer = this.id; // becuase each peer role decided this way.
-                                            // actually we should choose package from repo or from broadcast
+                    // we should use currentlu user because each user should have a role
                     String selectedRole = flipRandomValidatorCreator();
-                    System.out.println("Peer " + thisPeer + " role is: " + selectedRole);
+                    System.out.println("Peer " + this.id + " role is: " + selectedRole);
                     if (selectedRole.equals("creator")) {
                         createdPackageProcess(this);
                     } else if (selectedRole.equals("validator")) {
@@ -204,7 +213,7 @@ public class Peer {
                                 } else {
                                     System.out.println("Reward is not enough for validating!");
                                 }
-                            } else {  // env and dependency not match
+                            } else { // env and dependency not match
                                 validateFailProcess(gotPackage, this);
                             }
                             System.out.println("Validator process finish!!!");
@@ -213,7 +222,7 @@ public class Peer {
                         }
 
                     } else {
-                        System.out.println("Peer" + thisPeer + " waiting for next timestep!!");
+                        System.out.println("Peer" + this.id + " waiting for next timestep!!");
                     }
 
                     // Randomly choose an amount. Slightly more than balance is possible
@@ -266,7 +275,7 @@ public class Peer {
                     String message = queue.take(); // blocks if queue is empty
                     // Turn the string message back into a transaction
                     // System.out.println("consumer service messages: " + message);
-                    String[] parts = message.split("#");
+                    String[] parts = message.split("#");  // for transaction and package info fetching
 
                     Transaction receivedTx = Transaction.fromString(parts[0], this);
                     // Process the message

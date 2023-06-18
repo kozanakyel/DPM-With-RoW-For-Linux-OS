@@ -21,6 +21,7 @@ public class Peer {
 
     public int id;
     private static int countPeers = 0; // to assign an automatic id
+    private static double probabilityValidate = 0.7;
 
     // Every peer has its own copy of the blockchain
     // Possibly can occasionally become a little different from others
@@ -168,6 +169,26 @@ public class Peer {
         System.out.println("Fail validate process!");
     }
 
+    public void validateWithProbability(MetaPackage metaPackage, int score, Peer peer) throws NoSuchAlgorithmException {
+        // probability for validate but actually we find alternative solution
+        // and anyway we should change probabilty from the package difficukty score
+        // or validator reputation score
+        double prob = new Random().nextDouble();
+        System.out.println("This current probability: " + prob);
+        if (probabilityValidate >= prob)
+            validateSuccessProcess(metaPackage, peer, score);
+        else
+            validateFailProcess(metaPackage, peer);
+    }
+
+    public void validateProcessWithReward(MetaPackage metaPackage, int score, Peer peer) throws NoSuchAlgorithmException {
+        if (score > 0) {
+            validateWithProbability(metaPackage, score, peer);
+        } else {
+            System.out.println("Reward is not enough for validating!");
+        }
+    }
+
     /////////////////////////////////////////////////////////////////////////////////
     ///////////////////////// THE LIVING SIMULATION OF PEER
     ///////////////////////////////////////////////////////////////////////////////// /////////////////////////
@@ -208,11 +229,7 @@ public class Peer {
                                 System.out.println("Validate process with env assign!!");
                                 Integer reward = calculateScore(gotPackage);
                                 System.out.println("Reward is : " + reward);
-                                if (reward > 0) {
-                                    validateSuccessProcess(gotPackage, this, reward);
-                                } else {
-                                    System.out.println("Reward is not enough for validating!");
-                                }
+                                validateProcessWithReward(gotPackage, reward, this);
                             } else { // env and dependency not match
                                 validateFailProcess(gotPackage, this);
                             }
@@ -275,7 +292,7 @@ public class Peer {
                     String message = queue.take(); // blocks if queue is empty
                     // Turn the string message back into a transaction
                     // System.out.println("consumer service messages: " + message);
-                    String[] parts = message.split("#");  // for transaction and package info fetching
+                    String[] parts = message.split("#"); // for transaction and package info fetching
 
                     Transaction receivedTx = Transaction.fromString(parts[0], this);
                     // Process the message

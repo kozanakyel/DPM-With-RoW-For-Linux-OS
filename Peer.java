@@ -175,7 +175,7 @@ public class Peer {
         // or validator reputation score
         double prob = new Random().nextDouble();
         System.out.println("This current probability: " + prob);
-        if (probabilityValidate >= prob)
+        if (prob>= probabilityValidate)
             validateSuccessProcess(metaPackage, peer, score);
         else
             validateFailProcess(metaPackage, peer);

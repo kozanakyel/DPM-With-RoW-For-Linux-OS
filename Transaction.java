@@ -163,10 +163,11 @@ class Transaction {
         // }
 
         // Generate transaction outputs:
-        int leftOver = getInputsValue() - value; //get value of inputs then the left over change:
+        // int leftOver = getInputsValue() - value; //get value of inputs then the left over change:
+        int creatorOver = getInputsValue() + value;  // because we should add the score and value
 //        transactionId = calculateHash();
         outputs.add(new TransactionOutput(this.recipient, value, transactionId)); //send value to recipient
-        outputs.add(new TransactionOutput(this.sender, leftOver, transactionId)); //send the left over 'change' back to sender
+        outputs.add(new TransactionOutput(this.sender, creatorOver, transactionId)); //send the left over 'change' back to sender
         
         // Add outputs to Unspent list
         for(TransactionOutput o : outputs) {

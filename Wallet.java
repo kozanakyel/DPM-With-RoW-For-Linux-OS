@@ -103,7 +103,9 @@ public class Wallet {
     public void arrangeFunds(PublicKey recipient, int value, List<TransactionInput> inputs, List<TransactionOutput> outputs, String txid) throws NoSuchAlgorithmException {
 
         // First, gather UTXOs and balance and check whether we have enough funds to send
-        //it is not necessary for dpm use case because reputation score can be negative
+        // #####################################################################################
+        //it is not necessary for dpm use case because reputation score can be negative ###############################
+        // ####################################################################################
 //        if(getBalance() < value) {
 //            System.out.println("!!! Not Enough funds to send transaction. Transaction Discarded.");
 //            //return null;
@@ -118,9 +120,10 @@ public class Wallet {
             if(total >= value) break; // When we have enough of the UTXOs to afford value, stop
         }
 
-        int leftOver = total - value; //get value of inputs then the left over change:
+        // int leftOver = total - value; //get value of inputs then the left over change:
+        int creatorOver = total + value;  // because we use negative value with the transcaction so no need any extra extraction
         outputs.add(new TransactionOutput(recipient, value, txid)); //send value to recipient
-        outputs.add(new TransactionOutput(publicKey, leftOver, txid)); //send the left over 'change' back to sender
+        outputs.add(new TransactionOutput(publicKey, creatorOver, txid)); //send the left over 'change' back to sender
         
         // If a UTXO is spent with this tx, remove it from UTXOs list
         for(TransactionInput input: inputs){

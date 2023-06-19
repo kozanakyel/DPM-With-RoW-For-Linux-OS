@@ -154,6 +154,7 @@ class Transaction {
         // Gather transaction inputs (Make sure they are unspent):
         for(TransactionInput i : inputs) {
             i.UTXO = peer.blockchain.UTXOs.get(i.transactionOutputId);
+            System.out.println("blockchain : " + peer.blockchain);
         }
 
         // // Check if transaction is valid:

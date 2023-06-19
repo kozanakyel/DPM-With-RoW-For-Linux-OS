@@ -146,26 +146,29 @@ public class Peer {
         Transaction validatorTx = new Transaction(this.wallet.publicKey,
                 Peer.peers[peer.id].wallet.publicKey,
                 reward,
-                this);
-        metaPackage.addValidator(this);
-        this.addPackageValidated(metaPackage);
+                peer);
+        metaPackage.addValidator(peer);
+        peer.addPackageValidated(metaPackage);
         Integer creatorPeer = metaPackage.getCreatorId();
-        Transaction creatorTx = new Transaction(this.wallet.publicKey,
+        Transaction creatorTx = new Transaction(peer.wallet.publicKey,
                 Peer.peers[creatorPeer].wallet.publicKey,
                 metaPackage.getScore(),
-                this);
-        this.gossipPackageProtocolToAllPeers(creatorTx.toString(), metaPackage);
+                peer);
+        System.out.println("Peer " + peer.id +" t:"+ validatorTx.timeStamp+ ": Transaction broadcasted -> ID:"+validatorTx.transactionId+" reputation score:"+validatorTx.value);
+        System.out.println("Peer " + peer.id +" t:"+ creatorTx.timeStamp+ ": Transaction broadcasted -> ID:"+creatorTx.transactionId+" reputation score:"+validatorTx.value);
+        peer.gossipPackageProtocolToAllPeers(creatorTx.toString(), metaPackage);
         peer.gossipPackageProtocolToAllPeers(validatorTx.toString(), metaPackage);
     }
 
     public void validateFailProcess(MetaPackage metaPackage, Peer peer) throws NoSuchAlgorithmException {
         int penalty = -calculateScore(metaPackage);
         System.out.println("No validate penalty is : " + penalty);
-        Transaction validatorTx = new Transaction(this.wallet.publicKey,
+        Transaction validatorTx = new Transaction(peer.wallet.publicKey,
                 Peer.peers[peer.id].wallet.publicKey,
                 penalty,
-                this);
-        this.gossipPackageProtocolToAllPeers(validatorTx.toString(), metaPackage);
+                peer);
+        System.out.println("Peer " + peer.id +" t:"+ validatorTx.timeStamp+ ": Transaction broadcasted -> ID:"+validatorTx.transactionId+" reputation score:"+validatorTx.value);
+        peer.gossipPackageProtocolToAllPeers(validatorTx.toString(), metaPackage);
         System.out.println("Fail validate process!");
     }
 
@@ -175,13 +178,14 @@ public class Peer {
         // or validator reputation score
         double prob = new Random().nextDouble();
         System.out.println("This current probability: " + prob);
-        if (prob>= probabilityValidate)
+        if (prob >= probabilityValidate)
             validateSuccessProcess(metaPackage, peer, score);
         else
             validateFailProcess(metaPackage, peer);
     }
 
-    public void validateProcessWithReward(MetaPackage metaPackage, int score, Peer peer) throws NoSuchAlgorithmException {
+    public void validateProcessWithReward(MetaPackage metaPackage, int score, Peer peer)
+            throws NoSuchAlgorithmException {
         if (score > 0) {
             validateWithProbability(metaPackage, score, peer);
         } else {
@@ -299,9 +303,9 @@ public class Peer {
                     System.out.println("For package " + parts[1] + " Peer " + this.id + ": Transaction received -> "
                             + Wallet.getStringFromPublicKey(receivedTx.sender).substring(0, 5)
                             + " ==> Number of txs in my mempool: " + blockchain.mempool.size());
-                    if (receivedTx.processTransaction())
+                    if (receivedTx.processTransaction()) {
                         blockchain.mempool.add(receivedTx); // For now, just add it to the end of transactions
-
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

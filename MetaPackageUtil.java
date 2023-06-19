@@ -1,5 +1,4 @@
 import java.util.Random;
-import java.security.*;
 
 public class MetaPackageUtil {
     // uncompleted randomly created metapackages

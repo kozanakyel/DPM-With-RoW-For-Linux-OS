@@ -154,7 +154,7 @@ public class Peer {
                 Peer.peers[creatorPeer].wallet.publicKey,
                 metaPackage.getScore(),
                 this);
-        // this.gossipPackageProtocolToAllPeers(creatorTx.toString(), gotPackage);
+        this.gossipPackageProtocolToAllPeers(creatorTx.toString(), metaPackage);
         peer.gossipPackageProtocolToAllPeers(validatorTx.toString(), metaPackage);
     }
 

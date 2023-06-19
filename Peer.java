@@ -5,6 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
@@ -154,8 +155,10 @@ public class Peer {
                 Peer.peers[creatorPeer].wallet.publicKey,
                 metaPackage.getScore(),
                 peer);
-        System.out.println("Peer " + peer.id +" t:"+ validatorTx.timeStamp+ ": Transaction broadcasted -> ID:"+validatorTx.transactionId+" reputation score:"+validatorTx.value);
-        System.out.println("Peer " + peer.id +" t:"+ creatorTx.timeStamp+ ": Transaction broadcasted -> ID:"+creatorTx.transactionId+" reputation score:"+validatorTx.value);
+        System.out.println("Peer " + peer.id + " t:" + validatorTx.timeStamp + ": Transaction broadcasted -> ID:"
+                + validatorTx.transactionId + " reputation score:" + validatorTx.value);
+        System.out.println("Peer " + peer.id + " t:" + creatorTx.timeStamp + ": Transaction broadcasted -> ID:"
+                + creatorTx.transactionId + " reputation score:" + validatorTx.value);
         peer.gossipPackageProtocolToAllPeers(creatorTx.toString(), metaPackage);
         peer.gossipPackageProtocolToAllPeers(validatorTx.toString(), metaPackage);
     }
@@ -167,7 +170,8 @@ public class Peer {
                 Peer.peers[peer.id].wallet.publicKey,
                 penalty,
                 peer);
-        System.out.println("Peer " + peer.id +" t:"+ validatorTx.timeStamp+ ": Transaction broadcasted -> ID:"+validatorTx.transactionId+" reputation score:"+validatorTx.value);
+        System.out.println("Peer " + peer.id + " t:" + validatorTx.timeStamp + ": Transaction broadcasted -> ID:"
+                + validatorTx.transactionId + " reputation score:" + validatorTx.value);
         peer.gossipPackageProtocolToAllPeers(validatorTx.toString(), metaPackage);
         System.out.println("Fail validate process!");
     }
@@ -246,6 +250,26 @@ public class Peer {
                         System.out.println("Peer" + this.id + " waiting for next timestep!!");
                     }
 
+                    if (blockchain.mempool.size() >= 5) {
+                        try {
+                            // create a new block from the transactions in the mempool
+                            // List<Transaction> transactions = new ArrayList<>(blockchain.mempool);
+                            List<Transaction> transactionsToMine = new ArrayList<>(this.blockchain.mempool);
+                            Block newBlock = new Block(blockchain.getLastBlock().calculateHash(), transactionsToMine,
+                                    blockchain.blocks.size(), this.blockchain);
+                            System.out.println("newblocks hash: " + newBlock.hash);
+                            newBlock.hash = newBlock.calculateHash(); // because in constructor we forgot the
+                                                                      // calculateHash, bug fixs
+                            blockchain.addBlock(newBlock);
+                            // clear the mempool
+                            blockchain.mempool.clear();
+
+                            System.out.println("New block added to the blockchain!");
+                        } catch (NoSuchAlgorithmException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
                     // Randomly choose an amount. Slightly more than balance is possible
                     // so that we can check whether frauds are caught or not.
                     // int bal = this.wallet.getBalance();
@@ -305,6 +329,7 @@ public class Peer {
                             + " ==> Number of txs in my mempool: " + blockchain.mempool.size());
                     if (receivedTx.processTransaction()) {
                         blockchain.mempool.add(receivedTx); // For now, just add it to the end of transactions
+
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

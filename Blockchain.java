@@ -62,6 +62,8 @@ public class Blockchain {
         // Add it to the blockchain
         //addBlock(genesisBlock);
         blocks.add(genesisBlock);
+        // System.out.println(blocks.size());
+        // System.out.println(getLastBlock().hash);
         // Add the output transaction to UTXOs
         TransactionOutput output = new TransactionOutput(coinbase.recipient, coinbase.value, coinbase.transactionId);
         this.UTXOs.put(output.id, output);

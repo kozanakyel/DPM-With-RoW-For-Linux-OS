@@ -136,7 +136,7 @@ public class Peer {
     public void createdPackageProcess(Peer peer) {
         System.out.println("Starting Creating Package Process!");
         MetaPackage newPackage = MetaPackageUtil.createRandomMetaPackage(peer.wallet);
-        this.addPackageCreated(newPackage); // peers created package list
+        peer.addPackageCreated(newPackage); // peers created package list
         IPFSPackageCenter.addPackage(newPackage); // IPFS central package repo add
         System.out.println("Peer " + peer.id + " create " + newPackage.getName() + " and send IPFS repo.");
     }
@@ -250,46 +250,27 @@ public class Peer {
                         System.out.println("Peer" + this.id + " waiting for next timestep!!");
                     }
 
-                    if (blockchain.mempool.size() >= 5) {    // fixed mempoolsize for blockmined
+                    if (blockchain.mempool.size() >= 3) {    // fixed mempoolsize for blockmined
                         try {
                             // create a new block from the transactions in the mempool
                             // List<Transaction> transactions = new ArrayList<>(blockchain.mempool);
                             List<Transaction> transactionsToMine = new ArrayList<>(this.blockchain.mempool);
                             Block newBlock = new Block(blockchain.getLastBlock().calculateHash(), transactionsToMine,
                                     blockchain.blocks.size(), this.blockchain);
-                            System.out.println("newblocks hash: " + newBlock.hash);
+                            
                             newBlock.hash = newBlock.calculateHash(); // because in constructor we forgot the
                                                                       // calculateHash, bug fixs
+                            System.out.println("newblocks hash: " + newBlock.hash);
                             blockchain.addBlock(newBlock);
                             // clear the mempool
                             blockchain.mempool.clear();
 
                             System.out.println("New block added to the blockchain!");
 
-                            if(blockchain.isChainValid())
-                                System.out.println("This blockhian is VALID there is no problem!!!");
-                        } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+                        } catch (NoSuchAlgorithmException e) {
                             e.printStackTrace();
                         }
                     }
-
-                    // Randomly choose an amount. Slightly more than balance is possible
-                    // so that we can check whether frauds are caught or not.
-                    // int bal = this.wallet.getBalance();
-                    // if(bal>0) {
-                    // int amount = rand.nextInt((int)(bal*1.2));
-                    //
-                    // Transaction newTx = new Transaction(this.wallet.publicKey,
-                    // Peer.peers[receiver].wallet.publicKey,
-                    // amount,
-                    // this); // If we send this, why also send pubkey?
-                    //
-                    //
-                    // System.out.println("Peer " + this.id +" t:"+ newTx.timeStamp+ ": Transaction
-                    // broadcasted -> ID:"+newTx.transactionId+" val:"+newTx.value);
-                    //
-                    // this.broadcastToAllPeers(newTx.toString());
-                    // }
 
                 } catch (InterruptedException | NoSuchAlgorithmException e) {
                     e.printStackTrace();

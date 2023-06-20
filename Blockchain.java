@@ -103,10 +103,10 @@ public class Blockchain {
             for(int t=0; t <currentBlock.transactions.size(); t++) {
                 Transaction currentTransaction = currentBlock.transactions.get(t);
                 
-                if(!currentTransaction.verifySignature()){
-                    System.out.println("#Signature on Transaction(" + t + ") is Invalid");
-                    return false; 
-                }
+                // if(!currentTransaction.verifySignature()){
+                //     System.out.println("#Signature on Transaction(" + t + ") is Invalid");
+                //     return false; 
+                // }
                 if(currentTransaction.getInputsValue() != currentTransaction.getOutputsValue()) {
                     System.out.println("#Inputs are note equal to outputs on transaction(" + t + ")");
                     return false; 

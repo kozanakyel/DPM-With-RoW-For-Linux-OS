@@ -144,7 +144,7 @@ public class Peer {
     // we need new transaction constructor for got 2 role because each of them got
     // reputation score
     public void validateSuccessProcess(MetaPackage metaPackage, Peer peer, int reward) throws NoSuchAlgorithmException {
-        Transaction validatorTx = new Transaction(this.wallet.publicKey,
+        Transaction validatorTx = new Transaction(peer.wallet.publicKey,
                 Peer.peers[peer.id].wallet.publicKey,
                 reward,
                 peer);
@@ -164,7 +164,7 @@ public class Peer {
     }
 
     public void validateFailProcess(MetaPackage metaPackage, Peer peer) throws NoSuchAlgorithmException {
-        int penalty = -calculateScore(metaPackage);
+        int penalty = -calculateScore(metaPackage);  // negative result from reputation score
         System.out.println("No validate penalty is : " + penalty);
         Transaction validatorTx = new Transaction(peer.wallet.publicKey,
                 Peer.peers[peer.id].wallet.publicKey,
@@ -250,7 +250,7 @@ public class Peer {
                         System.out.println("Peer" + this.id + " waiting for next timestep!!");
                     }
 
-                    if (blockchain.mempool.size() >= 5) {
+                    if (blockchain.mempool.size() >= 5) {    // fixed mempoolsize for blockmined
                         try {
                             // create a new block from the transactions in the mempool
                             // List<Transaction> transactions = new ArrayList<>(blockchain.mempool);
@@ -265,7 +265,10 @@ public class Peer {
                             blockchain.mempool.clear();
 
                             System.out.println("New block added to the blockchain!");
-                        } catch (NoSuchAlgorithmException e) {
+
+                            if(blockchain.isChainValid())
+                                System.out.println("This blockhian is VALID there is no problem!!!");
+                        } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
                             e.printStackTrace();
                         }
                     }

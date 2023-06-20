@@ -69,7 +69,7 @@ public class Block {
         // The loop for mining
         // System.out.print("write hash: " + this.calculateHash());
         if (!this.hash.equals("0")) {
-            while (!this.calculateHash().substring(0, this.blockchain.difficulty).equals(target)) {
+            while (!this.hash.substring(0, this.blockchain.difficulty).equals(target)) {
                 this.nonce++;
                 this.hash = calculateHash();
             }

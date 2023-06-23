@@ -5,14 +5,13 @@ import java.util.stream.Collectors;
 
 
 class Transaction {
-    public Peer peer;   // Who initiated this transaction?
-                        //Normally we wouldn't need this but for the simulation we do 
+    public Peer peer;   //Required for this simulation to work properly, stores the transaction initiator
     public String transactionId; //Contains a hash of transaction
     public PublicKey sender; //Sender's address/public key.
     public PublicKey recipient; //Recipient's address/public key.
-    public long timeStamp; // Time of first creation
-    public int value; // The amount to be transferred
-    public byte[] signature; // Signature to prevent others from spending funds in our wallet
+    public long timeStamp; //Time of first creation
+    public int value; //The amount to be transferred
+    public byte[] signature; //Signature to prevent others from spending funds in our wallet
     
     // Transaction inputs (The UTXOs coming to the sender and will be spent in this Tx)
     public List<TransactionInput> inputs;
@@ -63,14 +62,12 @@ class Transaction {
         this.value = value;
         this.timeStamp = timeStamp;
         this.transactionId = transactionId;
-        inputs = new ArrayList<TransactionInput>();
-        outputs = new ArrayList<TransactionOutput>();
-        this.inputs = in;   //We may need to
-        this.outputs = out; //clone these two??
+        this.inputs = in;
+        this.outputs = out;
     }
 
 
-    // This Calculates the transaction hash 
+    // Handles the calculation of the transaction hash
     public String calculateHash() throws NoSuchAlgorithmException {
         String dataToHash = "" + this.sender + this.recipient + this.value + this.timeStamp;// There is a subtle caveat here!
         
@@ -96,7 +93,6 @@ class Transaction {
         return StringUtil.hash(dataToHash);
     }
     
-    
     /*public static String bytesToHex(byte[] hash) {
         BigInteger number = new BigInteger(1, hash);
         StringBuilder hexString = new StringBuilder(number.toString(16));
@@ -105,44 +101,43 @@ class Transaction {
         }
         return hexString.toString();
     }*/
-
-    
     
     // Prepare input for signing and call signature function
     public void generateSignature(PrivateKey privateKey) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
         // Prepare data
-        String data = Wallet.getStringFromPublicKey(sender)
-                    + Wallet.getStringFromPublicKey(recipient)
-                    + Integer.toString(value) 
-                    + Long.toString(timeStamp);
-        for (TransactionInput input : this.inputs)      { data += input.transactionOutputId; }
-        for (TransactionOutput output : this.outputs)   { data += output.id; }
-        
+        String data = prepareData();
         //Sign
         signature = peer.wallet.sign(data);
         //Now, the signature for this transaction is ready.
     }
 
-    
 
-    
+
+
     // Prepare the input for signature verification
     public boolean verifySignature() throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
         //Prepare data
-        String data = Wallet.getStringFromPublicKey(sender) 
-                    + Wallet.getStringFromPublicKey(recipient)
-                    + Integer.toString(value) 
-                    + Long.toString(timeStamp);
-        for (TransactionInput input : this.inputs) { data += input.transactionOutputId; }
-        for (TransactionOutput output : this.outputs) { data += output.id; }
-
+        String data = prepareData();
         //Verify
         if(this.sender==null) return true; //coinbase transaction => no signature at all
         return peer.wallet.verify(sender,data,signature);
         //return verifyECDSASig(Wallet.getStringFromPublicKey(sender), data, signature);      
     }
 
-    
+    private String prepareData() {
+        String data = Wallet.getStringFromPublicKey(sender)
+                + Wallet.getStringFromPublicKey(recipient)
+                + value
+                + timeStamp;
+        for (TransactionInput input : this.inputs) {
+            data += input.transactionOutputId;
+        }
+        for (TransactionOutput output : this.outputs) {
+            data += output.id;
+        }
+        return data;
+    }
+
 
     public boolean processTransaction() throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         // If the signature is not valid, reject the transaction
@@ -245,17 +240,17 @@ class Transaction {
                                         parts[0],
                                         peer);
 
-        int inpindex=5;
-        int outindex=6;
-        if (parts.length > inpindex && !parts[inpindex].isEmpty()) {
-            for (String input : parts[inpindex].split(",")) {
+        int inIndex=5;
+        int outIndex=6;
+        if (parts.length > inIndex && !parts[inIndex].isEmpty()) {
+            for (String input : parts[inIndex].split(",")) {
                 String[] inputParts = input.split(":");
                 t.inputs.add(new TransactionInput(inputParts[0]));
             }
         }
 
-        if (parts.length > outindex && !parts[outindex].isEmpty()) {
-            for (String output : parts[outindex].split(",")) {
+        if (parts.length > outIndex && !parts[outIndex].isEmpty()) {
+            for (String output : parts[outIndex].split(",")) {
                 String[] outputParts = output.split(":");
                 t.outputs.add(new TransactionOutput(t.recipient, Integer.parseInt(outputParts[1]), t.transactionId));
             }

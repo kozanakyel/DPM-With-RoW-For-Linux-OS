@@ -13,7 +13,7 @@ public class Test {
         Peer.peers = new Peer[4];
         for(int i=0; i<4; i++) {
             Peer.peers[i] = new Peer();
-            System.out.println("Get peer envirmont depenceny status: " + Peer.peers[i].getEnvStatus());
+            System.out.println("Get peer environment dependency status: " + Peer.peers[i].getEnvStatus());
         }
 
         // One of the peers creates the genesis block
@@ -53,10 +53,6 @@ public class Test {
         
         // Random broadcasting experiment
         Peer.peers[2].broadcastToAllPeers("Hello from peer "+2);
-
         */
-
-        
     }
-    
 }

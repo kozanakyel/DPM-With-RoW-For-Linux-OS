@@ -7,7 +7,7 @@ public class IPFSPackageCenter {
      * our central IPFS file storage repo, actually we want to develop
      * a distrubuted package manager for peers
      * but we dont forget all the packages need a storage area
-     * */
+     */
     public static ArrayList<MetaPackage> allPackages = new ArrayList<>();  // Static list to store all packages
 
     // Method to add package to the list
@@ -27,7 +27,7 @@ public class IPFSPackageCenter {
         }
     }
 
-    public static Integer getSize(){
+    public static Integer getSize() {
         return allPackages.size();
     }
 

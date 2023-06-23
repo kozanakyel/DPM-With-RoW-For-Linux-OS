@@ -14,13 +14,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class Peer {
 
     public static Peer[] peers; // In a real system, there must be a listing of peer ids to broadcast, here we
-                                // keep all peers in this array
+    // keep all peers in this array
     public static Random rand;
 
     private final Integer envStatus; // for peers linux env type because we can check if env and package env is
-                                     // adaptive or not
+    // adaptive or not
 
     public int id;
+
+
     private static int countPeers = 0; // to assign an automatic id
     private static double probabilityValidate = 0.7;
 
@@ -34,7 +36,7 @@ public class Peer {
     // In fact, a peer can have multiple wallets
     // But for this application, to keep it simple, we implement only one
     protected Wallet wallet; // This is the wallet of this peer that holds the keys and UTXOs to be used
-                             // later
+    // later
 
     private BlockingQueue<String> queue; // To keep incoming messages
 
@@ -51,7 +53,7 @@ public class Peer {
         queue = new LinkedBlockingQueue<>();
         rand = new Random(System.currentTimeMillis());
         wallet = new Wallet(this); // Normally a wallet should be anonymous, or may not be, but we add this for
-                                   // debugging
+        // debugging
         blockchain = new Blockchain(this);
 
         this.envStatus = new Random().nextInt(4); // for peers env status
@@ -97,7 +99,7 @@ public class Peer {
      * public void addToMempool(Transaction tx) {
      * this.blockchain.mempool.add(tx);
      * }
-     * 
+     *
      * // Method to get the mempool
      * public ArrayList<Transaction> getMempool() {
      * return this.blockchain.mempool;
@@ -257,9 +259,9 @@ public class Peer {
                             List<Transaction> transactionsToMine = new ArrayList<>(this.blockchain.mempool);
                             Block newBlock = new Block(blockchain.getLastBlock().calculateHash(), transactionsToMine,
                                     blockchain.blocks.size(), this.blockchain);
-                            
+
                             newBlock.hash = newBlock.calculateHash(); // because in constructor we forgot the
-                                                                      // calculateHash, bug fixs
+                            // calculateHash, bug fixs
                             System.out.println("newblocks hash: " + newBlock.hash);
                             blockchain.addBlock(newBlock);
                             // clear the mempool
@@ -417,15 +419,15 @@ public class Peer {
      * // As an example, we'll just take all transactions from the mempool.
      * // In reality, you'd want to choose transactions based on some criteria,
      * // such as the transaction fee.
-     * 
+     *
      * // Also, this does not handle the case where a block's size is limited,
      * // and the total size of all transactions in the mempool exceeds this limit.
-     * 
+     *
      * //We will implement Merkle tree later
-     * 
+     *
      * List<Transaction> transactionsToMine = new ArrayList<>(this.mempool);
      * this.mempool.clear();
-     * 
+     *
      * // Add the transactions to a new block and add it to the blockchain
      * Block newBlock = new Block(blockchain.getLastBlock().hash,
      * transactionsToMine, this);

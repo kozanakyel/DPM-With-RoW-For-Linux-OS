@@ -75,7 +75,7 @@ public class Blockchain {
         Block currentBlock; 
         Block previousBlock;
         String hashTarget = new String(new char[difficulty]).replace('\0', '0');
-        HashMap<String,TransactionOutput> tempUTXOs = new HashMap<String,TransactionOutput>(); //a temporary working list of unspent transactions at a given block state.
+        HashMap<String, TransactionOutput> tempUTXOs = new HashMap<String,TransactionOutput>(); //a temporary working list of unspent transactions at a given block state.
         tempUTXOs.putAll(UTXOs);
         
         // Loop through blockchain to check hashes:

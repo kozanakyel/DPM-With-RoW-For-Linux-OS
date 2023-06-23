@@ -250,7 +250,7 @@ public class Peer {
                         System.out.println("Peer" + this.id + " waiting for next timestep!!");
                     }
 
-                    if (blockchain.mempool.size() >= 3) {    // fixed mempoolsize for blockmined
+                    if (blockchain.mempool.size() >= 5) {    // fixed mempoolsize for blockmined
                         try {
                             // create a new block from the transactions in the mempool
                             // List<Transaction> transactions = new ArrayList<>(blockchain.mempool);

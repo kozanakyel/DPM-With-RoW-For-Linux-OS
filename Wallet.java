@@ -31,30 +31,6 @@ public class Wallet {
         return total;
     }
 
-    // // Prepare input for signing and call signature function
-    // public byte[] sign(String data) {
-    //     return applyECDSASig(privateKey, data);        
-    // }
-
-    // // Sign the transaction
-    // private byte[] applyECDSASig(PrivateKey privateKey, String input) {
-    //     Signature dsa;
-    //     byte[] output = new byte[0];
-    //     try {
-    //         //dsa = Signature.getInstance("ECDSA", "BC"); // This will probably not work
-    //         dsa = Signature.getInstance("SHA256withECDSA");
-    //         dsa.initSign(privateKey);
-    //         byte[] strByte = input.getBytes();
-    //         dsa.update(strByte);
-    //         byte[] realSig = dsa.sign();
-    //         output = realSig;
-    //     } catch (Exception e) {
-    //         throw new RuntimeException(e);
-    //     }
-    //     return output;
-    // }
-
-
     // method to sign a message using the private key
     public byte[] sign(String message) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         Signature signature = Signature.getInstance("SHA256withRSA");
@@ -63,23 +39,6 @@ public class Wallet {
         return signature.sign();
     }
 
-
-    // public boolean verify(PublicKey publicKey, String data, byte[] signature) {
-    //     return verifyECDSASig(publicKey, data, signature);
-    // }
-
-    // Verify the digital signature on the data
-    // private boolean verifyECDSASig(PublicKey publicKey, String data, byte[] signature) {
-    //     try {
-    //         //Signature ecdsaVerify = Signature.getInstance("ECDSA", "BC");
-    //         Signature ecdsaVerify = Signature.getInstance("SHA256withECDSA");
-    //         ecdsaVerify.initVerify(publicKey);
-    //         ecdsaVerify.update(data.getBytes());
-    //         return ecdsaVerify.verify(signature);
-    //     }catch(Exception e) {
-    //         throw new RuntimeException(e);
-    //     }
-    // }
 
     // method to verify a message using the signature and the public key
     public boolean verify(PublicKey publicKey, String data, byte[] signature) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
@@ -94,16 +53,8 @@ public class Wallet {
     // be sent to the receiver and the change will be sent back to the sender
     public void arrangeFunds(PublicKey recipient, int value, List<TransactionInput> inputs, List<TransactionOutput> outputs, String txid) throws NoSuchAlgorithmException {
 
-        // First, gather UTXOs and balance and check whether we have enough funds to send
-        // #####################################################################################
-        //it is not necessary for dpm use case because reputation score can be negative ###############################
-        // ####################################################################################
-//        if(getBalance() < value) {
-//            System.out.println("!!! Not Enough funds to send transaction. Transaction Discarded.");
-//            //return null;
-//        }
 
-        // Then, find enough transaction inputs to afford the value
+        // Find enough transaction inputs to afford the value
         int total = 0;
         for (Map.Entry<String, TransactionOutput> item : UTXOs.entrySet()) {
             TransactionOutput UTXO = item.getValue();
@@ -112,7 +63,6 @@ public class Wallet {
             if (total >= value) break; // When we have enough of the UTXOs to afford value, stop
         }
 
-        // int leftOver = total - value; //get value of inputs then the left over change:
         int creatorOver = total + value;  // because we use negative value with the transcaction so no need any extra extraction
         outputs.add(new TransactionOutput(recipient, value, txid)); //send value to recipient
         outputs.add(new TransactionOutput(publicKey, creatorOver, txid)); //send the left over 'change' back to sender
@@ -131,9 +81,7 @@ public class Wallet {
     }
 
 
-    //////////////////////////////////////////////////////////////////////////////
-    /////////////////// CRYPTOGRAPHIC OPERATIONS /////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////// CRYPTOGRAPHIC OPERATIONS /////////////////////////////////
 
     // Generates a public-private RSA key pair for this wallet
     public void generateKeyPair() {
@@ -187,5 +135,4 @@ public class Wallet {
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         return keyFactory.generatePublic(keySpec);
     }
-
 }

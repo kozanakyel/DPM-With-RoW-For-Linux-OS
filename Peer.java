@@ -94,18 +94,6 @@ public class Peer {
         validatedMetaPackages.add(metaPackage);
     }
 
-    /*
-     * // Method to add a transaction to the mempool
-     * public void addToMempool(Transaction tx) {
-     * this.blockchain.mempool.add(tx);
-     * }
-     *
-     * // Method to get the mempool
-     * public ArrayList<Transaction> getMempool() {
-     * return this.blockchain.mempool;
-     * }
-     */
-
     // randomly choosing role for each peer any timestep...
     public String flipRandomValidatorCreator() {
 
@@ -199,10 +187,8 @@ public class Peer {
         }
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////// THE LIVING SIMULATION OF PEER
-    ///////////////////////////////////////////////////////////////////////////////// /////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////
+
+    ///////////////////////// THE LIVING SIMULATION OF PEER /////////////////////////
 
     // This is a user simulation (it randomly initializes some transactions from
     // time to time)
@@ -227,9 +213,9 @@ public class Peer {
                         createdPackageProcess(this);
                     } else if (selectedRole.equals("validator")) {
                         // 1-get packages from IPS repo or gossip protocol broadcast
-                        // 2-validate packages llok env status code
-                        // 3-yeah i validate or not look env dependecy
-                        // 4-guve score write transactions
+                        // 2-validate packages by checking env status code
+                        // 3-validate or don't check env dependency
+                        // 4-give score write transactions
                         System.out.println("Starting Validating Package Process!");
                         if (IPFSPackageCenter.getSize() > 0) {
                             MetaPackage gotPackage = IPFSPackageCenter.sendRandomPackage();
@@ -255,7 +241,6 @@ public class Peer {
                     if (blockchain.mempool.size() >= 5) {    // fixed mempoolsize for blockmined
                         try {
                             // create a new block from the transactions in the mempool
-                            // List<Transaction> transactions = new ArrayList<>(blockchain.mempool);
                             List<Transaction> transactionsToMine = new ArrayList<>(this.blockchain.mempool);
                             Block newBlock = new Block(blockchain.getLastBlock().calculateHash(), transactionsToMine,
                                     blockchain.blocks.size(), this.blockchain);
@@ -281,10 +266,7 @@ public class Peer {
         }).start();
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////// BLOCKCHAIN INTERACTION METHODS
-    ///////////////////////////////////////////////////////////////////////////////// ////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////// BLOCKCHAIN INTERACTION METHODS /////////////////////////
 
     public Blockchain getBlockchain() {
         return blockchain;
@@ -324,10 +306,7 @@ public class Peer {
         }).start();
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////// COMMUNICATION METHODS
-    ///////////////////////////////////////////////////////////////////////////////// /////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////// COMMUNICATION METHODS /////////////////////////////
 
     // Starts the listening server
     public void startServer() {
@@ -409,30 +388,6 @@ public class Peer {
                     e.printStackTrace();
                 }
             }).start();
-            // }
         }
     }
-
-    // Method to mine a block
-    /*
-     * public void mineBlock() {
-     * // As an example, we'll just take all transactions from the mempool.
-     * // In reality, you'd want to choose transactions based on some criteria,
-     * // such as the transaction fee.
-     *
-     * // Also, this does not handle the case where a block's size is limited,
-     * // and the total size of all transactions in the mempool exceeds this limit.
-     *
-     * //We will implement Merkle tree later
-     *
-     * List<Transaction> transactionsToMine = new ArrayList<>(this.mempool);
-     * this.mempool.clear();
-     *
-     * // Add the transactions to a new block and add it to the blockchain
-     * Block newBlock = new Block(blockchain.getLastBlock().hash,
-     * transactionsToMine, this);
-     * this.blockchain.addBlock(newBlock);
-     * }
-     */
-
 }

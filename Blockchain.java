@@ -46,10 +46,6 @@ public class Blockchain {
         // Manually set a transaction ID
         coinbase.transactionId = "coinbase";
 
-        // Manually sign the coinbase transaction
-        //String dataToSign = Wallet.getStringFromPublicKey(coinbase.recipient) + Integer.toString(coinbase.value);
-        //coinbase.signature = this.peer.wallet.sign(dataToSign);
-
         // Create a list of transactions and add the coinbase transaction
         List<Transaction> transactions = new ArrayList<>();
         transactions.add(coinbase);
@@ -61,10 +57,7 @@ public class Blockchain {
 
 
         // Add it to the blockchain
-        //addBlock(genesisBlock);
         blocks.add(genesisBlock);
-        // System.out.println(blocks.size());
-        // System.out.println(getLastBlock().hash);
         // Add the output transaction to UTXOs
         TransactionOutput output = new TransactionOutput(coinbase.recipient, coinbase.value, coinbase.transactionId);
         this.UTXOs.put(output.id, output);
@@ -99,15 +92,11 @@ public class Blockchain {
                 return false;
             }
 
-            // Loop thru blockchains transactions:
+            // Loop through blockchains transactions:
             TransactionOutput tempOutput;
             for (int t = 0; t < currentBlock.transactions.size(); t++) {
                 Transaction currentTransaction = currentBlock.transactions.get(t);
 
-                // if(!currentTransaction.verifySignature()){
-                //     System.out.println("#Signature on Transaction(" + t + ") is Invalid");
-                //     return false; 
-                // }
                 if (currentTransaction.getInputsValue() != currentTransaction.getOutputsValue()) {
                     System.out.println("#Inputs are note equal to outputs on transaction(" + t + ")");
                     return false;
@@ -141,9 +130,7 @@ public class Blockchain {
                     System.out.println("#Transaction(" + t + ") output 'change' is not sender.");
                     return false;
                 }
-
             }
-
         }
         System.out.println("Blockchain is valid");
         return true;

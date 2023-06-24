@@ -6,13 +6,6 @@ import java.security.NoSuchAlgorithmException;
 
 public class StringUtil {
 
-    // method to generate hash of a string
-    // public static String generateHash(String data) throws NoSuchAlgorithmException {
-    //     MessageDigest digest = MessageDigest.getInstance("SHA-256");
-    //     byte[] hash = digest.digest(data.getBytes(StandardCharsets.UTF_8));
-    //     return Base64.getEncoder().encodeToString(hash);
-    // }
-
     // To easily select a certain hash for the whole project
     public static String hash(String input) {
         return applySha256(input);

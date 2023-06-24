@@ -60,8 +60,7 @@ public class Block {
 
     // Increases nonce value until hash target is reached.
     // Hash is generated here, calculating hash in the constructor doesn't make
-    // sense
-    // because we need to search for a nonce that gives leading zeros
+    // sense because we need to search for a nonce that gives leading zeros
     public void mineBlock() {
         // merkleRoot = StringUtil.getMerkleRoot(transactions);
         String target = StringUtil.getDificultyString(this.blockchain.difficulty);
@@ -80,9 +79,7 @@ public class Block {
 
     // Calculates the Merkle root of all given transactions
     // Normally, the length of transactions must be a power of 2 for this to work
-    // properly
-    // Otherwise the last element and possibly some other elements may not affect
-    // the root
+    // properly Otherwise the last element and possibly some other elements may not affect the root
     public String getMerkleRoot() {
         int count = transactions.size();
         ArrayList<String> previousTreeLayer = new ArrayList<String>();
@@ -101,20 +98,4 @@ public class Block {
         String merkleRoot = (treeLayer.size() == 1) ? treeLayer.get(0) : "";
         return merkleRoot;
     }
-
-    // Add transactions to this block
-    /*
-     * public boolean addTransaction(Transaction transaction) {
-     * if(transaction == null) return false;
-     * if((previousHash != "0")) {
-     * if((transaction.processTransaction() != true)) {
-     * System.out.println("Transaction failed to process. Discarded.");
-     * return false;
-     * }
-     * }
-     * transactions.add(transaction);
-     * System.out.println("Transaction Successfully added to Block");
-     * return true;
-     * }
-     */
 }

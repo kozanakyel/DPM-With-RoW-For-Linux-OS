@@ -68,37 +68,8 @@ class Transaction {
     // Handles the calculation of the transaction hash
     public String calculateHash() throws NoSuchAlgorithmException {
         String dataToHash = "" + this.sender + this.recipient + this.value + this.timeStamp;// There is a subtle caveat here!
-
-        // Add inputs to the hash
-        //for (TransactionInput input : this.inputs) {
-        //    dataToHash += input.transactionOutputId;
-        //}
-
-        // Add outputs to the hash
-        //for (TransactionOutput output : this.outputs) {
-        //    dataToHash += output.id;
-        //}
-        
-        /*MessageDigest digest;
-        byte[] hash = null;
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-            hash = digest.digest(dataToHash.getBytes(StandardCharsets.UTF_8));
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        return bytesToHex(hash);*/
         return StringUtil.hash(dataToHash);
     }
-    
-    /*public static String bytesToHex(byte[] hash) {
-        BigInteger number = new BigInteger(1, hash);
-        StringBuilder hexString = new StringBuilder(number.toString(16));
-        while (hexString.length() < 32) {
-            hexString.insert(0, '0');
-        }
-        return hexString.toString();
-    }*/
 
     // Prepare input for signing and call signature function
     public void generateSignature(PrivateKey privateKey) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException {
@@ -136,11 +107,6 @@ class Transaction {
 
 
     public boolean processTransaction() throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        // If the signature is not valid, reject the transaction
-        // if(!verifySignature()) {
-        //     System.out.println("!!! Transaction Signature failed to verify.");
-        //     return false;
-        // }
 
         // Gather transaction inputs (Make sure they are unspent):
         for (TransactionInput i : inputs) {
@@ -148,16 +114,9 @@ class Transaction {
             System.out.println("blockchain : " + peer.blockchain);
         }
 
-        // // Check if transaction is valid:
-        // if(getInputsValue() < Blockchain.minimumTransaction) {
-        //     System.out.println("Transaction Inputs too small: " + getInputsValue());
-        //     return false;
-        // }
 
         // Generate transaction outputs:
-        // int leftOver = getInputsValue() - value; //get value of inputs then the left over change:
         int creatorOver = getInputsValue() + value;  // because we should add the score and value
-//        transactionId = calculateHash();
         outputs.add(new TransactionOutput(this.recipient, value, transactionId)); //send value to recipient
         outputs.add(new TransactionOutput(this.sender, creatorOver, transactionId)); //send the left over 'change' back to sender
 
@@ -171,20 +130,8 @@ class Transaction {
             if (i.UTXO == null) continue; //if Transaction can't be found skip it
             peer.blockchain.UTXOs.remove(i.UTXO.id);
         }
-
         return true;
     }
-    /*public PublicKey getPublicKeyFromString(String key) {
-        try {
-            byte[] byteKey = Base64.getDecoder().decode(key.getBytes());
-            X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(byteKey);
-            KeyFactory kf = KeyFactory.getInstance("EC");
-    
-            return kf.generatePublic(X509publicKey);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }*/
 
     public int getInputsValue() {
         int total = 0;
@@ -251,7 +198,6 @@ class Transaction {
                 t.outputs.add(new TransactionOutput(t.recipient, Integer.parseInt(outputParts[1]), t.transactionId));
             }
         }
-
         return t;
     }
 }
